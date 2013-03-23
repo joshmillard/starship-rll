@@ -31,8 +31,8 @@ function love.load()
 	-- create a large field of random x,y coordinates
 	starfield = {} 	
 	for i=1, 1000 do
-		local newstarx = math.random(0, 2000)
-		local newstary = math.random(0, 2000)
+		local newstarx = math.random(0, 8000)
+		local newstary = math.random(0, 8000)
 		local newstarcolorr = math.random(100) + 155
 		local newstarcolorg = math.random(100) + 155
 		local newstarcolorb = math.random(50)  + 205
@@ -41,9 +41,9 @@ function love.load()
 
 	-- and a second field that we'll scroll in parallax!
         starfield_far = {}
-        for i=1, 1000 do
-                local newstarx = math.random(0, 2000)
-                local newstary = math.random(0, 2000)
+        for i=1, 250 do
+                local newstarx = math.random(0, 8000)
+                local newstary = math.random(0, 8000)
                 local newstarcolorr = math.random(100) + 55  -- farther stars dimmer!
                 local newstarcolorg = math.random(100) + 55
                 local newstarcolorb = math.random(50)  + 105
@@ -53,8 +53,8 @@ function love.load()
 	-- and how about a few planets while we're at it
 	planetfield = {}
 	for i=1, 20 do
-		local newplanetx = math.random(0,2000)
-		local newplanety = math.random(0,2000)
+		local newplanetx = math.random(0,8000)
+		local newplanety = math.random(0,8000)
 		local newplanetcolorr = math.random(50) + 155
 		local newplanetcolorg = math.random(50) + 155
 		local newplanetcolorb = math.random(50) + 155
@@ -140,12 +140,12 @@ function love.draw()
 	-- draw the stars
 	for i,v in ipairs(starfield_far) do
                 love.graphics.setColor(v[3], v[4], v[5], 255)
-                love.graphics.rectangle( "fill", ((v[1] - ship.x ) / (zoomlevel * 2)) + camx, ((v[2] - ship.y) / (zoomlevel * 2)) + camy, 1, 1 )
+                love.graphics.rectangle( "fill", ((v[1] - ship.x ) / (zoomlevel * 4)) + camx, ((v[2] - ship.y) / (zoomlevel * 4)) + camy, 1, 1 )
         end
 
 	for i,v in ipairs(starfield) do
 		love.graphics.setColor(v[3], v[4], v[5], 255)
-		love.graphics.rectangle( "fill", ((v[1] - ship.x) / zoomlevel) + camx, ((v[2] - ship.y) / zoomlevel) + camy, 1, 1 )
+		love.graphics.rectangle( "fill", ((v[1] - ship.x) / (zoomlevel * 2)) + camx, ((v[2] - ship.y) / (zoomlevel * 2)) + camy, 1, 1 )
 	end
 
 	-- draw the planets
@@ -173,7 +173,7 @@ function love.draw()
 	-- print a jolly message on the screen
         love.graphics.setFont(f_ocr_12)
         love.graphics.setColor(80, 80, 160)
-        love.graphics.print( "arrow keys to move, z to zoom, q to quit", 10, 218 )
+        love.graphics.print( "arrow keys to move, z to zoom, esc to quit", 10, 218 )
 end
 
 function love.keypressed(key)
