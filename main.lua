@@ -13,7 +13,11 @@ function love.load()
 	shipimage_half = love.graphics.newImage("/img/uss-ship_half.png")
 	shipimage_quarter = love.graphics.newImage("/img/uss-ship_quarter.png")
 
-        f_ocr_12 = love.graphics.newFont("font/OCRAStd.otf", 8)
+        f_ocr_12 = love.graphics.newFont("font/uni05_53.ttf", 8)
+	f_imgfont = love.graphics.newImageFont("font/Resource-imagefont.png",
+		" abcdefghijklmnopqrstuvwxyz" ..
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0" ..
+		"123456789.,!?-+/():;%&`'*#=[]\"")
 
 	planet_64 = love.graphics.newImage("/img/planet_64.png")
         planet_32 = love.graphics.newImage("/img/planet_32.png")
@@ -51,6 +55,10 @@ function love.load()
         end
 
 	-- and how about a few planets while we're at it
+	planetnames = {"Ceres", "Pallas", "Juno", "Vesta", "Astraea", "Hebe", "Iris", "Flora", "Metis", "Hygiea",
+			"Parthenope", "Victoria", "Egeria", "Irene", "Eunomia", "Psyche", "Thetis", "Melpomene",
+			"Fortuna", "Massalia", "Lutetia", "Kalliope", "Thalia", "Themis", "Phocaea"}
+	planetmodifiers = {" I", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X", "-A", "-B", "-C", "-Z" } 
 	planetfield = {}
 	for i=1, 20 do
 		local newplanetx = math.random(0,8000)
@@ -83,10 +91,11 @@ function love.load()
                         offsethalf = 32
                         offsetquarter = 32
 		end
+		local pname = planetnames[i] .. planetmodifiers[math.random(#planetmodifiers)]
 		table.insert(planetfield, 
 			{x = newplanetx, y = newplanety, colorr = newplanetcolorr, colorg = newplanetcolorg,
 				colorb = newplanetcolorb, image = image, imagehalf = imagehalf, imagequarter = imagequarter,
-				offset = offset, offsethalf = offsethalf, offsetquarter = offsetquarter }
+				offset = offset, offsethalf = offsethalf, offsetquarter = offsetquarter, name = pname }
 			)
 	end
 
@@ -153,10 +162,13 @@ function love.draw()
 		love.graphics.setColor(v.colorr, v.colorg, v.colorb, 255)
 		if zoomlevel == 1 then
 			love.graphics.draw(v.image, (v.x - ship.x) + camx, (v.y - ship.y) + camy, 0, 1, 1, v.offset, v.offset)
+			love.graphics.printf( v.name, (v.x - ship.x) + camx, (v.y -ship.y) + camy + v.offset + 10, 0, "center")
 		elseif zoomlevel == 2 then
                         love.graphics.draw(v.imagehalf, ((v.x - ship.x) / 2) + camx, ((v.y - ship.y) / 2) + camy, 0, 1, 1, v.offsethalf, v.offsethalf)
+			love.graphics.printf( v.name, ((v.x - ship.x) / 2) + camx, ((v.y -ship.y) / 2) + camy + v.offset + 10, 0, "center")
 		else
                         love.graphics.draw(v.imagequarter, ((v.x - ship.x) / 4) + camx, ((v.y - ship.y) / 4) + camy, 0, 1, 1, v.offsetquarter, v.offsetquarter)
+			love.graphics.printf( v.name, ((v.x - ship.x) / 4) + camx, ((v.y -ship.y) / 4) + camy + v.offset + 10, 0, "center")
 		end
 	end
 
