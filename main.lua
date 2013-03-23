@@ -17,13 +17,25 @@ function love.load()
 	-- create a large field of random x,y coordinates
 	starfield = {} 	
 	for i=1, 1000 do
-		newstarx = math.random(0, 1000)
-		newstary = math.random(0, 1000)
-		newstarcolorr = math.random(255)
-		newstarcolorg = math.random(255)
-		newstarcolorb = math.random(255)
+		local newstarx = math.random(0, 2000)
+		local newstary = math.random(0, 2000)
+		local newstarcolorr = math.random(100) + 155
+		local newstarcolorg = math.random(100) + 155
+		local newstarcolorb = math.random(50)  + 205
 		table.insert(starfield, {newstarx, newstary, newstarcolorr, newstarcolorg, newstarcolorb} )
 	end
+
+	-- and a second field that we'll scroll in parallax!
+        starfield_far = {}
+        for i=1, 1000 do
+                local newstarx = math.random(0, 1000)
+                local newstary = math.random(0, 1000)
+                local newstarcolorr = math.random(100) + 55  -- farther stars dimmer!
+                local newstarcolorg = math.random(100) + 55
+                local newstarcolorb = math.random(50)  + 105
+                table.insert(starfield_far, {newstarx, newstary, newstarcolorr, newstarcolorg, newstarcolorb} )
+        end
+
 
 end
 
@@ -54,8 +66,8 @@ function love.update(dt)
                 end
         end
 
-        -- move ship based on heading and velocity
-        ship.x = ship.x + (ship.velocity * math.cos(math.rad(ship.theta)))
+        -- move ship in coordinate space based on heading and velocity
+	ship.x = ship.x + (ship.velocity * math.cos(math.rad(ship.theta)))
         ship.y = ship.y + (ship.velocity * math.sin(math.rad(ship.theta)))
 end
 
@@ -64,14 +76,19 @@ function love.draw()
         love.graphics.scale(3, 3)
 
 	-- draw the stars
+	for i,v in ipairs(starfield_far) do
+                love.graphics.setColor(v[3], v[4], v[5], 255)
+                love.graphics.point(v[1] - (ship.x / 2), v[2] - (ship.y / 2) )
+        end
+
 	for i,v in ipairs(starfield) do
 		love.graphics.setColor(v[3], v[4], v[5], 255)
-		love.graphics.point(v[1], v[2])
+		love.graphics.point(v[1] - ship.x, v[2] - ship.y)
 	end
 
 	-- draw the ship
         love.graphics.setColor(255,255,255,255)
-        love.graphics.draw(ship.image, ship.x, ship.y, math.rad(ship.theta), 1, 1, ship.xoffset, ship.yoffset)
+        love.graphics.draw(ship.image, 160, 120, math.rad(ship.theta), 1, 1, ship.xoffset, ship.yoffset)
 	
 	-- print a jolly message on the screen
         love.graphics.setFont(f_ocr_12)
