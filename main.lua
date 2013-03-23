@@ -14,7 +14,16 @@ function love.load()
                 xoffset = shipimage:getWidth() / 2, yoffset = shipimage:getHeight() / 2 }
 
         -- and let's generate a hacky starfield
-
+	-- create a large field of random x,y coordinates
+	starfield = {} 	
+	for i=1, 1000 do
+		newstarx = math.random(0, 1000)
+		newstary = math.random(0, 1000)
+		newstarcolorr = math.random(255)
+		newstarcolorg = math.random(255)
+		newstarcolorb = math.random(255)
+		table.insert(starfield, {newstarx, newstary, newstarcolorr, newstarcolorg, newstarcolorb} )
+	end
 
 end
 
@@ -51,11 +60,20 @@ function love.update(dt)
 end
 
 function love.draw()
+	-- draw everything scaled up 3x for blocky pixel look
         love.graphics.scale(3, 3)
 
+	-- draw the stars
+	for i,v in ipairs(starfield) do
+		love.graphics.setColor(v[3], v[4], v[5], 255)
+		love.graphics.point(v[1], v[2])
+	end
+
+	-- draw the ship
         love.graphics.setColor(255,255,255,255)
         love.graphics.draw(ship.image, ship.x, ship.y, math.rad(ship.theta), 1, 1, ship.xoffset, ship.yoffset)
-
+	
+	-- print a jolly message on the screen
         love.graphics.setFont(f_ocr_12)
         love.graphics.setColor(40, 40, 0)
         love.graphics.print( "space!", 200, 200 )
