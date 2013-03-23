@@ -1,5 +1,9 @@
-seriously
+Star Trek-ish roguelikelike project!
 
-just read up in this thing
+This is built in the LOVE (aka love2D) engine, a free Lua-based 2D game library:
 
-also, buy milk
+https://www.love2d.org/
+https://www.love2d.org/wiki/Getting_Started
+
+Installing love2d should be all that's required to run this; see the instructions
+above for details on execution.
