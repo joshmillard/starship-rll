@@ -12,6 +12,8 @@ function love.load()
         shipimage = love.graphics.newImage("/img/uss-ship.png")
 	shipimage_half = love.graphics.newImage("/img/uss-ship_half.png")
 	shipimage_quarter = love.graphics.newImage("/img/uss-ship_quarter.png")
+	ppointer = love.graphics.newImage("/img/planetpointer.png")
+
 
 	-- curious annoyance: must first load bitmap font as image to let imageFilter get set to nearest
 	-- for it and THEN do newImageFont with that, or it will default to linear scaling after all
@@ -133,12 +135,12 @@ function love.update(dt)
 
         -- handle velocity changes
         if love.keyboard.isDown("up") then
-                ship.velocity = ship.velocity + (1 * dt)
+                ship.velocity = ship.velocity + (3 * dt)
                 if ship.velocity > ship.maxv then
                         ship.velocity = ship.maxv
                 end
         elseif love.keyboard.isDown("down") then
-                ship.velocity = ship.velocity - (1 * dt)
+                ship.velocity = ship.velocity - (5 * dt)
                 if ship.velocity < ship.minv then
                         ship.velocity = ship.minv
                 end
@@ -199,13 +201,21 @@ function love.draw()
 	-- show target planet info
 	love.graphics.setFont(font_default)
 	love.graphics.setColor(160, 160, 40)
-	love.graphics.print( "Target:\n" .. ptarget.name .. "\nDistance:\n" .. ptarget.distance
-		.. "\nHeading:\n" .. ptarget.heading,  250, 5)
+	love.graphics.print( "Target\n " .. ptarget.name .. "\nDistance ly\n " .. math.floor(ptarget.distance) / 100
+		.. "\nHeading\n " .. math.floor(ptarget.heading),  250, 5)
+
+	-- draw planet target pointer
+	local px = 30 * math.cos(math.rad(ptarget.heading))
+	local py = 30 * math.sin(math.rad(ptarget.heading))
+	local pt = math.rad(ptarget.heading + 90)
+	love.graphics.setColor(255,255,255,130) -- let's throw in some transparency
+	love.graphics.draw(ppointer, px + camx, py + camy, pt, 1, 1, ppointer:getWidth() / 2, ppointer:getHeight() / 2)
 
 	-- print some help text
         love.graphics.setFont(font_default)
         love.graphics.setColor(80, 80, 160)
-        love.graphics.print( "arrow keys to move, z to zoom, esc to quit", 10, 218 )
+        love.graphics.print( "arrow keys to move, z to zoom, esc to quit\n"
+		.. "tab to select new target at random", 10, 218 )
 end
 
 function love.keypressed(key)
