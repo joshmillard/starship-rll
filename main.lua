@@ -239,10 +239,17 @@ function love.draw()
 	love.graphics.print("Warp factor: " .. ship.warpfactor, 250, 78)
 
 	-- print some help text
+<<<<<<< HEAD
 	love.graphics.setFont(font_default)
 	love.graphics.setColor(80, 80, 160)
 	love.graphics.print( "arrow keys to move, z to zoom, esc to quit\n"
-		.. "tab to target random plant, a to toggle autonav", 10, 218 )
+		.. "tab to target random planet, a to toggle autonav", 10, 218 )
+=======
+        love.graphics.setFont(font_default)
+        love.graphics.setColor(80, 80, 160)
+        love.graphics.print( "arrow keys to move, z to zoom, esc to quit\n"
+		.. "tab to target random planet, a to toggle autonav", 10, 218 )
+>>>>>>> 6a18b916528cfaa2e451e277e415ccd6c5f56c7a
 end
 
 
