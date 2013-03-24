@@ -228,7 +228,7 @@ function love.draw()
         love.graphics.setFont(font_default)
         love.graphics.setColor(80, 80, 160)
         love.graphics.print( "arrow keys to move, z to zoom, esc to quit\n"
-		.. "tab to target random plant, a to toggle autonav", 10, 218 )
+		.. "tab to target random planet, a to toggle autonav", 10, 218 )
 end
 
 function love.keypressed(key)
