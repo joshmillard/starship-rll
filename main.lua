@@ -126,9 +126,17 @@ function love.update(dt)
 	-- if autonav is on, we ignore keyboard input and let the computer navigate the ship
 	-- super hacky stubbing out of this so far
 	if autonav == true then
-		if ship.theta ~= ptarget.heading then
-			-- turn until facing the right way
-			ship.theta = ptarget.heading
+		if math.abs(ship.theta - ptarget.heading) > 1 then
+			-- if we're more than a degree off heading, turn the ship
+			local h = ptarget.heading
+			if h < ship.theta then
+				h = h + 360
+			end
+			if (h - ship.theta < 180) then
+				turnclockwise(dt)
+			else
+				turncounterclockwise(dt)
+			end
 		end
 		if ptarget.distance < ((math.pow(ship.velocity, 2) * 10) + 100) then
 			-- reduce throttle as we approach
@@ -278,6 +286,9 @@ function updateptarget()
 	local rise = ptarget.y - ship.y
 	local run = ptarget.x - ship.x
 	ptarget.heading = math.deg(math.atan2(rise, run))
+	if ptarget.heading < 0 then
+		ptarget.heading = ptarget.heading + 360
+	end
 end
 
 -- ship helm controls
