@@ -103,6 +103,9 @@ function love.load()
 			)
 	end
 
+	-- set up planet targeting
+	initplanettarget()
+
 	-- global camera zoom value for zooming in and out
 	zoomlevel = 1
 	-- global camera offset to put ship in center of screen
@@ -144,6 +147,13 @@ function love.update(dt)
         -- move ship in coordinate space based on heading and velocity
 	ship.x = ship.x + (ship.velocity * math.cos(math.rad(ship.theta)))
         ship.y = ship.y + (ship.velocity * math.sin(math.rad(ship.theta)))
+
+	-- update planet target distance and heading
+	ptarget.distance = math.sqrt(math.pow(ptarget.x - ship.x, 2) + math.pow(ptarget.y - ship.y, 2))
+	local rise = ptarget.y - ship.y
+	local run = ptarget.x - ship.x
+	ptarget.heading = math.deg(math.atan2(rise, run))
+
 end
 
 function love.draw()
@@ -186,7 +196,13 @@ function love.draw()
                 love.graphics.draw(ship.imagequarter, camx, camy, math.rad(ship.theta), 1, 1, ship.xoffset / 4, ship.yoffset / 4)
 	end
 
-	-- print a jolly message on the screen
+	-- show target planet info
+	love.graphics.setFont(font_default)
+	love.graphics.setColor(160, 160, 40)
+	love.graphics.print( "Target:\n" .. ptarget.name .. "\nDistance:\n" .. ptarget.distance
+		.. "\nHeading:\n" .. ptarget.heading,  250, 5)
+
+	-- print some help text
         love.graphics.setFont(font_default)
         love.graphics.setColor(80, 80, 160)
         love.graphics.print( "arrow keys to move, z to zoom, esc to quit", 10, 218 )
@@ -206,8 +222,29 @@ function love.keypressed(key)
 		else
 			zoomlevel = 1
 		end
+	elseif key == "tab" then
+		selectnextplanettarget()
 	elseif key == "escape" then
 		-- let's get out of here!
 		love.event.quit()
         end
 end
+
+-- some dumb little stub functions to setup and cycle a planet-targeting reticule and guide
+function initplanettarget()
+	local target = getrandomplanet()
+	ptarget = { name = target.name, x = target.x, y = target.y, distance = 0, heading = 0 }
+end
+
+function selectnextplanettarget()
+	local target = getrandomplanet()
+        ptarget = { name = target.name, x = target.x, y = target.y }
+end
+
+function getrandomplanet()
+	return planetfield[math.random(#planetfield)] 
+end
+
+
+
+	
