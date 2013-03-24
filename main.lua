@@ -13,11 +13,15 @@ function love.load()
 	shipimage_half = love.graphics.newImage("/img/uss-ship_half.png")
 	shipimage_quarter = love.graphics.newImage("/img/uss-ship_quarter.png")
 
-        f_ocr_12 = love.graphics.newFont("font/uni05_53.ttf", 8)
-	f_imgfont = love.graphics.newImageFont("font/Resource-imagefont.png",
+	-- curious annoyance: must first load bitmap font as image to let imageFilter get set to nearest
+	-- for it and THEN do newImageFont with that, or it will default to linear scaling after all
+	bitmapfontimage = love.graphics.newImage("/font/tinybitmapfont.png")
+	f_imgfont = love.graphics.newImageFont(bitmapfontimage,
 		" abcdefghijklmnopqrstuvwxyz" ..
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0" ..
-		"123456789.,!?-+/():;%&`'*#=[]\"")
+		"123456789.,!?-+/():;%&`'*#=[]\\\"@$")
+
+	font_default = f_imgfont
 
 	planet_64 = love.graphics.newImage("/img/planet_64.png")
         planet_32 = love.graphics.newImage("/img/planet_32.png")
@@ -183,7 +187,7 @@ function love.draw()
 	end
 
 	-- print a jolly message on the screen
-        love.graphics.setFont(f_ocr_12)
+        love.graphics.setFont(font_default)
         love.graphics.setColor(80, 80, 160)
         love.graphics.print( "arrow keys to move, z to zoom, esc to quit", 10, 218 )
 end
