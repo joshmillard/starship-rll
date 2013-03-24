@@ -34,7 +34,8 @@ function love.load()
 	-- create a simple ship table data structure
 	ship = { image = shipimage, imagehalf = shipimage_half, imagequarter = shipimage_quarter, 
 		x = 1000, y = 1000, theta = 0, velocity = 0, maxv = 100, minv = 0,
-		xoffset = shipimage:getWidth() / 2, yoffset = shipimage:getHeight() / 2 }
+		xoffset = shipimage:getWidth() / 2, yoffset = shipimage:getHeight() / 2,
+		fuel = 100, warpfactor = 1 }
 
 	-- and let's generate a hacky starfield
 	-- create a large field of random x,y coordinates
@@ -138,7 +139,7 @@ function love.update(dt)
 				turncounterclockwise(dt)
 			end
 		end
-		if ptarget.distance < ((math.pow(ship.velocity, 2) * 10) + 100) then
+		if ptarget.distance < ((math.pow(ship.velocity, 2) * 10) + 50) then
 			-- reduce throttle as we approach
 			decreasevelocity(dt)
 		else
@@ -164,6 +165,13 @@ function love.update(dt)
 	-- move ship in coordinate space based on heading and velocity
 	ship.x = ship.x + (ship.velocity * math.cos(math.rad(ship.theta)))
 	ship.y = ship.y + (ship.velocity * math.sin(math.rad(ship.theta)))
+
+	-- consume some fuel
+	-- totally superficial for the moment
+	ship.fuel = ship.fuel - (ship.velocity / 1000)
+	if ship.fuel < 0 then
+		ship.fuel = 0
+	end
 
 	-- update planet target distance and heading
 	updateptarget()
@@ -213,7 +221,7 @@ function love.draw()
 	-- show target planet info
 	love.graphics.setFont(font_default)
 	love.graphics.setColor(160, 160, 40)
-	love.graphics.print( "Target\n " .. ptarget.name .. "\nDistance ly\n " .. math.floor(ptarget.distance) / 100
+	love.graphics.print( "Target\n " .. ptarget.name .. "\nDistance (ly)\n " .. math.floor(ptarget.distance) / 100
 		.. "\nHeading\n " .. math.floor(ptarget.heading),  250, 5)
 
 	-- draw planet target pointer
@@ -222,6 +230,13 @@ function love.draw()
 	local pt = math.rad(ptarget.heading + 90)
 	love.graphics.setColor(255,255,255,130) -- let's throw in some transparency
 	love.graphics.draw(ppointer, px + camx, py + camy, pt, 1, 1, ppointer:getWidth() / 2, ppointer:getHeight() / 2)
+
+	-- draw fuel gauge and speedometer
+	love.graphics.setColor(150,150,200,255)
+	love.graphics.rectangle("fill", 250, 60, ship.fuel / 2, 3) 
+	love.graphics.print("Fuel: " .. math.ceil(ship.fuel) .. "%", 250, 65)
+	love.graphics.setColor(200,150,150,255)
+	love.graphics.print("Warp factor: " .. ship.warpfactor, 250, 78)
 
 	-- print some help text
 	love.graphics.setFont(font_default)
@@ -302,6 +317,7 @@ function increasevelocity(dt)
 	if ship.velocity > ship.maxv then
 		ship.velocity = ship.maxv
 	end
+	ship.warpfactor = math.floor(math.sqrt(ship.velocity))
 end
 
 
@@ -310,6 +326,7 @@ function decreasevelocity(dt)
 	if ship.velocity < ship.minv then
 		ship.velocity = ship.minv
 	end
+	ship.warpfactor = math.floor(math.sqrt(ship.velocity))
 end
 
 
