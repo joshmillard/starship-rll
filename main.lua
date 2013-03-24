@@ -34,7 +34,7 @@ function love.load()
 
         -- create a simple ship table data structure
         ship = { image = shipimage, imagehalf = shipimage_half, imagequarter = shipimage_quarter, 
-		x = 1000, y = 1000, theta = 0, velocity = 0, maxv = 100, minv = -30,
+		x = 1000, y = 1000, theta = 0, velocity = 0, maxv = 100, minv = 0,
                 xoffset = shipimage:getWidth() / 2, yoffset = shipimage:getHeight() / 2 }
 
         -- and let's generate a hacky starfield
@@ -117,44 +117,49 @@ function love.load()
 	camx = 160
 	camy = 120
 
+	-- toggle autonavigator state
+	autonav = false
 end
 
 function love.update(dt)
-        -- handle turning
-        if love.keyboard.isDown("left") then
-                ship.theta = ship.theta - (60 * dt)
-                if ship.theta < 0 then
-                        ship.theta = ship.theta + 360
-                end
-        elseif love.keyboard.isDown("right") then
-                ship.theta = ship.theta + (60 * dt)
-                if ship.theta > 360 then
-                        ship.theta = ship.theta - 360
-                end
-        end
 
-        -- handle velocity changes
-        if love.keyboard.isDown("up") then
-                ship.velocity = ship.velocity + (3 * dt)
-                if ship.velocity > ship.maxv then
-                        ship.velocity = ship.maxv
-                end
-        elseif love.keyboard.isDown("down") then
-                ship.velocity = ship.velocity - (5 * dt)
-                if ship.velocity < ship.minv then
-                        ship.velocity = ship.minv
-                end
-        end
+	-- if autonav is on, we ignore keyboard input and let the computer navigate the ship
+	-- super hacky stubbing out of this so far
+	if autonav == true then
+		if ship.theta ~= ptarget.heading then
+			-- turn until facing the right way
+			ship.theta = ptarget.heading
+		end
+		if ptarget.distance < ((math.pow(ship.velocity, 2) * 10) + 100) then
+			-- reduce throttle as we approach
+			decreasevelocity(dt)
+		else
+			-- increase throttle to lay in speed
+			increasevelocity(dt)
+		end
+	else
+	        -- handle turning
+	        if love.keyboard.isDown("left") then
+	                turncounterclockwise(dt)
+	        elseif love.keyboard.isDown("right") then
+	                turnclockwise(dt)
+	        end
+
+	        -- handle velocity changes
+	        if love.keyboard.isDown("up") then
+        	increasevelocity(dt)
+		elseif love.keyboard.isDown("down") then
+	        	decreasevelocity(dt)
+		end
+	end
 
         -- move ship in coordinate space based on heading and velocity
 	ship.x = ship.x + (ship.velocity * math.cos(math.rad(ship.theta)))
         ship.y = ship.y + (ship.velocity * math.sin(math.rad(ship.theta)))
 
 	-- update planet target distance and heading
-	ptarget.distance = math.sqrt(math.pow(ptarget.x - ship.x, 2) + math.pow(ptarget.y - ship.y, 2))
-	local rise = ptarget.y - ship.y
-	local run = ptarget.x - ship.x
-	ptarget.heading = math.deg(math.atan2(rise, run))
+	updateptarget()
+
 
 end
 
@@ -215,7 +220,7 @@ function love.draw()
         love.graphics.setFont(font_default)
         love.graphics.setColor(80, 80, 160)
         love.graphics.print( "arrow keys to move, z to zoom, esc to quit\n"
-		.. "tab to select new target at random", 10, 218 )
+		.. "tab to target random plant, a to toggle autonav", 10, 218 )
 end
 
 function love.keypressed(key)
@@ -223,6 +228,7 @@ function love.keypressed(key)
         elseif key == "up" then
         elseif key == "right" then
         elseif key == "left" then
+	
 	elseif key == "z" then
 		-- cycle through zoom levels in view
 		if zoomlevel == 1 then
@@ -232,29 +238,73 @@ function love.keypressed(key)
 		else
 			zoomlevel = 1
 		end
+	
 	elseif key == "tab" then
 		selectnextplanettarget()
+	
+	elseif key == "a" then
+		if autonav == true then
+			autonav = false
+		else
+			autonav = true
+		end
+	
 	elseif key == "escape" then
 		-- let's get out of here!
 		love.event.quit()
-        end
+	        
+	end
 end
 
 -- some dumb little stub functions to setup and cycle a planet-targeting reticule and guide
 function initplanettarget()
 	local target = getrandomplanet()
 	ptarget = { name = target.name, x = target.x, y = target.y, distance = 0, heading = 0 }
+	updateptarget()
 end
 
 function selectnextplanettarget()
 	local target = getrandomplanet()
         ptarget = { name = target.name, x = target.x, y = target.y }
+	updateptarget()
 end
 
 function getrandomplanet()
 	return planetfield[math.random(#planetfield)] 
 end
 
+function updateptarget()
+	ptarget.distance = math.sqrt(math.pow(ptarget.x - ship.x, 2) + math.pow(ptarget.y - ship.y, 2))
+	local rise = ptarget.y - ship.y
+	local run = ptarget.x - ship.x
+	ptarget.heading = math.deg(math.atan2(rise, run))
+end
 
+-- ship helm controls
+function increasevelocity(dt)
+	ship.velocity = ship.velocity + (3 * dt)
+	if ship.velocity > ship.maxv then
+		ship.velocity = ship.maxv
+	end
+end
 
-	
+function decreasevelocity(dt)
+	ship.velocity = ship.velocity - (10 * dt)
+	if ship.velocity < ship.minv then
+		ship.velocity = ship.minv
+	end
+end
+
+function turnclockwise(dt)
+	ship.theta = ship.theta + (60 * dt)
+	if ship.theta > 360 then
+		ship.theta = ship.theta - 360
+	end
+end
+
+function turncounterclockwise(dt)
+	ship.theta = ship.theta - (60 * dt)
+	if ship.theta < 0 then
+		ship.theta = ship.theta + 360
+	end
+end
