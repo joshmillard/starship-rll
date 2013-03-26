@@ -184,6 +184,8 @@ function draw()
 	-- draw everything scaled up 3x for blocky pixel look
 	love.graphics.scale(3, 3)
 
+	love.graphics.setBackgroundColor(0,0,0,255)
+
 	-- draw the stars
 	for i,v in ipairs(starfield_far) do
 		love.graphics.setColor(v[3], v[4], v[5], 255)
@@ -274,10 +276,6 @@ function keypressed(key)
 			autonav = true
 		end
 	
-	elseif key == "escape" then
-		-- let's get out of here!
-		love.event.quit()
-		
 	end
 end
 
