@@ -62,7 +62,7 @@ function load()
 
 	-- some misc. biographical fodder
 	departments_list = {"Command", "Engineering", "Tactical", "Medical", "Linguistics",
-			"Maintenance", "Cargo"}
+			"Maintenance", "Cargo", "Security", "Morale", "Informatics"}
 	roles_list = {"chief officer", "senior officer", "crewman"}
 	morale_list = {"depressed", "poor", "fair", "middling", "good", "cheerful", "thrilled"}
 	ambitions_list = {"engineering", "combat", "command", "medicine", "linguistics",
@@ -71,7 +71,8 @@ function load()
 			"promotion", "drinking"}
 
 	-- character template
-	char = {firstname = "",
+	-- don't need this, really, but for reference
+	curchar = {firstname = "",
 			lastname = "",
 			initial = "",
 			age = 0,
@@ -81,7 +82,14 @@ function load()
 			ambitions = {}
 		}
 
-	generatecharacter()
+	crewroster = {}
+	generatecrewroster()
+	-- this should probably be done when switching to dossier mode, but just
+	-- for safety at the moment since this is a hacky mess...
+	curchar = crewroster[1]
+
+	-- modal switch hack
+	viewmode = "dossier"
 
 end
 
@@ -95,17 +103,25 @@ function draw()
 	-- 3x3 blocky pixels
 	love.graphics.scale(3, 3)
 
-	-- simple backdrop
 	love.graphics.setBackgroundColor(230, 200, 140)
 
-	love.graphics.setColor(40, 40, 40, 255)
-	love.graphics.rectangle("fill", 8, 8, 68, 68)
-	love.graphics.setColor(120, 100, 80, 255)
-	love.graphics.rectangle("fill", 10, 10, 64, 64)
+	if viewmode == "dossier" then
+		-- let's look at an individual crewman!
 
-	-- render that fella!
-	drawface(10,10)
-	drawbio()
+		-- portrait frame
+		love.graphics.setColor(40, 40, 40, 255)
+		love.graphics.rectangle("fill", 8, 8, 68, 68)
+		love.graphics.setColor(120, 100, 80, 255)
+		love.graphics.rectangle("fill", 10, 10, 64, 64)
+
+		-- render that fella!
+		drawface(10,10)
+		drawbio()
+	
+	else
+		-- lets look at the full list
+		drawroster()
+	end
 
   -- print some help text
   love.graphics.setColor(80, 80, 160)
@@ -117,7 +133,16 @@ end
 
 function keypressed(key) 
 	if key == "r" then
-		generatecharacter()
+		curchar = generatecharacter()
+	end
+
+	-- force toggle between view modes
+	if key == "m" then
+		if viewmode == "dossier" then
+			viewmode = "list"
+		else
+			viewmode = "dossier"
+		end
 	end
 	
 end
@@ -125,6 +150,8 @@ end
 
 -- draw the face graphics in order
 function drawface(x,y)
+	local portrait = curchar.face
+
 	love.graphics.setColor(portrait.shoulders_c)
 	love.graphics.draw(portrait.shoulders, 0 + x, 0 + y)
   love.graphics.setColor(portrait.face_c)
@@ -145,6 +172,8 @@ end
 
 -- print out some biographic info
 function drawbio()
+	local char = curchar
+
 	love.graphics.setColor(0,0,0,255)
 	local namestring = char.firstname
 	if(char.initial ~= "") then
@@ -170,8 +199,38 @@ function drawbio()
 end
 
 
+-- draw up the list of the crew
+function drawroster() 
+	love.graphics.setColor(0,0,0,255)
+	love.graphics.print("USS Demo crew roster", 10, 12)
+	love.graphics.print("NAME", 18, 26)
+	love.graphics.print("DEPARTMENT", 98, 26)
+	love.graphics.print("ROLE", 178, 26)
+	love.graphics.print("AGE", 258, 26)
+
+	for i=1,#crewroster do
+		local c = crewroster[i]
+		local namestring = c.lastname .. ", " .. string.sub(c.firstname, 1, 1)
+		love.graphics.print(namestring, 20, 30 + (i*8))
+
+		love.graphics.print(c.department, 100, 30 + (i*8))
+		love.graphics.print(c.role, 180, 30 + (i*8))
+		love.graphics.print(c.age, 260, 30 + (i*8))
+
+	end
+end
+
+-- generate a list of crewmen and put them in the global list
+function generatecrewroster()
+	for i=1,20 do
+		table.insert(crewroster, generatecharacter())
+	end
+end
+
+
 -- put together face and bio
 function generatecharacter()
+	local char = {}
 	char.firstname = firstnames_list[math.random(#firstnames_list)]
 	char.lastname = lastnames_list[math.random(#lastnames_list)]
 	char.initial = ""
@@ -184,7 +243,15 @@ function generatecharacter()
 
 	char.age = math.random(25) + 18
 	char.department = departments_list[math.random(#departments_list)]
-	char.role = roles_list[math.random(#roles_list)]
+	
+	if math.random(5) > 1 then
+		char.role = "crewman"
+	elseif math.random(3) > 1 then
+		char.role = "senior officer"
+	else
+		char.role = "chief officer"
+	end
+	
 	char.morale = morale_list[math.random(#morale_list)]
 
 	-- pick an ambition at random and give it a random intensity
@@ -198,13 +265,17 @@ function generatecharacter()
 		end
 	end
 
-	generaterandomface() 
+	char.face = generaterandomface() 
+
+	return char
 
 end
 
 
 -- pick random facial features and colors
 function generaterandomface()
+
+	local portrait = {}
 
   portrait.eyebrows = eyebrows_list[math.random(#eyebrows_list)][2]
   portrait.eyebrows_c = getrandomcolor()
@@ -220,6 +291,8 @@ function generaterandomface()
   portrait.nose_c = getrandomcolor()
   portrait.shoulders = shoulders_list[math.random(#shoulders_list)][2]
   portrait.shoulders_c = getrandomcolor()
+
+	return portrait
 
 end
 
