@@ -86,10 +86,13 @@ function load()
 	generatecrewroster()
 	-- this should probably be done when switching to dossier mode, but just
 	-- for safety at the moment since this is a hacky mess...
-	curchar = crewroster[1]
+	-- curchar = crewroster[1]
 
 	-- modal switch hack
-	viewmode = "dossier"
+	viewmode = "list"
+
+	-- pointer for roster
+	rosterindex = 1
 
 end
 
@@ -118,14 +121,14 @@ function draw()
 		drawface(10,10)
 		drawbio()
 	
-	else
+	elseif viewmode == "list" then
 		-- lets look at the full list
 		drawroster()
 	end
 
   -- print some help text
   love.graphics.setColor(80, 80, 160)
-  love.graphics.print( "r for new character", 10, 218 )
+  love.graphics.print( "up/down to select, right to view, left to return", 10, 218 )
 
 
 end
@@ -134,6 +137,29 @@ end
 function keypressed(key) 
 	if key == "r" then
 		curchar = generatecharacter()
+	end
+
+	if viewmode == "list" then
+		if key == "right" then
+			viewmode = "dossier"
+			curchar = crewroster[rosterindex]
+		elseif key == "down" then
+			-- in the long run, abstract roster index navigation stuff
+			rosterindex = rosterindex + 1
+			if rosterindex > #crewroster then
+				rosterindex = 1
+			end
+		elseif key == "up" then
+			rosterindex = rosterindex - 1
+			if rosterindex < 1 then
+				rosterindex = #crewroster
+			end
+		end
+
+	elseif viewmode == "dossier" then
+		if key == "left" then
+			viewmode = "list"
+		end
 	end
 
 	-- force toggle between view modes
@@ -210,14 +236,24 @@ function drawroster()
 
 	for i=1,#crewroster do
 		local c = crewroster[i]
+		if rosterindex == i then	
+			love.graphics.setColor(90,30,30,255)
+		else
+			love.graphics.setColor(0,0,0,255)
+		end
+
 		local namestring = c.lastname .. ", " .. string.sub(c.firstname, 1, 1)
 		love.graphics.print(namestring, 20, 30 + (i*8))
 
 		love.graphics.print(c.department, 100, 30 + (i*8))
 		love.graphics.print(c.role, 180, 30 + (i*8))
 		love.graphics.print(c.age, 260, 30 + (i*8))
-
 	end
+		
+	-- draw pointer
+	love.graphics.setColor(90,0,0,255)
+	love.graphics.print("--", 10, 30 + (rosterindex*8))
+
 end
 
 -- generate a list of crewmen and put them in the global list

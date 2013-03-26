@@ -37,8 +37,8 @@ function love.draw()
 	end
 
 	-- global mode-switching prompt
-	love.graphics.setColor(0,0,0,130)
-	love.graphics.rectangle("fill", 0,0,200,10)
+	love.graphics.setColor(50,50,50,130)
+	love.graphics.rectangle("fill", 0,0,200,8)
 	love.graphics.setColor(255,130,130,130)
 	love.graphics.print("[1] nav  [2] roster", 0, 0)
 
