@@ -60,12 +60,25 @@ function load()
 	initials_list = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
 			"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
 
+	-- some misc. biographical fodder
+	departments_list = {"Command", "Engineering", "Tactical", "Medical", "Linguistics",
+			"Maintenance", "Cargo"}
+	roles_list = {"chief officer", "senior officer", "crewman"}
+	morale_list = {"depressed", "poor", "fair", "middling", "good", "cheerful", "thrilled"}
+	ambitions_list = {"engineering", "combat", "command", "medicine", "linguistics",
+			"machinery", "sports", "visual art", "music", "romance", "companionship",
+			"parenthood", "reading", "writing", "cooking", "exploration", "safety",
+			"promotion", "drinking"}
 
 	-- character template
 	char = {firstname = "",
 			lastname = "",
 			initial = "",
-			age = 0
+			age = 0,
+			department = "",
+			role = "",
+			morale = "",
+			ambitions = {}
 		}
 
 	generatecharacter()
@@ -140,6 +153,20 @@ function drawbio()
 	namestring = namestring .. " " .. char.lastname
 	love.graphics.print(namestring, 10, 80)
 	love.graphics.print("Age: " .. char.age, 10, 88)
+
+	love.graphics.print("Assignment:\n" .. char.department .. ",\n " .. char.role, 10, 100)
+
+	love.graphics.print("Morale:\n " .. char.morale, 10, 130)
+
+	local ambitionstring = ""
+	for i,v in ipairs(char.ambitions) do
+		ambitionstring = ambitionstring .. " " .. v[1] .. " "
+		for i=1,v[2] do
+			ambitionstring = ambitionstring .. "+"
+		end
+		ambitionstring = ambitionstring .. "\n" 
+	end
+	love.graphics.print("Ambitions:\n" .. ambitionstring, 10, 150) 
 end
 
 
@@ -156,6 +183,20 @@ function generatecharacter()
 	end
 
 	char.age = math.random(25) + 18
+	char.department = departments_list[math.random(#departments_list)]
+	char.role = roles_list[math.random(#roles_list)]
+	char.morale = morale_list[math.random(#morale_list)]
+
+	-- pick an ambition at random and give it a random intensity
+	char.ambitions = { {ambitions_list[math.random(#ambitions_list)], math.random(5) } }
+	-- then add a couple more if chance has it
+	-- note: this lazy demo hack can lead to duplicate ambitions
+	if(math.random(2) > 1) then
+		table.insert(char.ambitions, {ambitions_list[math.random(#ambitions_list)], math.random(5) })
+		if(math.random(2) > 1) then
+	    table.insert(char.ambitions, {ambitions_list[math.random(#ambitions_list)], math.random(5) })
+		end
+	end
 
 	generaterandomface() 
 
