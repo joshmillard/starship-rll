@@ -36,6 +36,16 @@ function load()
 	nose_list = { {"thin", nose_thin}, {"wide", nose_wide } }
 	shoulders_list = { {"thin", shoulders_thin}, {"wide", shoulders_wide } }	
 
+	-- create a palette of base colors for various face parts
+	shoulders_colors = { {160,20,20}, {200,200,50}, {80, 160, 200} }
+	eyes_colors = { {255, 255, 255}, {220, 220, 220}, {255, 255, 200}, {220, 220, 180} }
+	face_colors = { {240, 210, 210}, {220, 220, 200}, {220, 200, 190}, {200, 180, 150}, {170, 150, 110},
+			{160, 150, 90}, {130, 100, 60}, {90, 80, 50}, {70, 50, 30}, {90, 180, 80}, {100, 200, 230} }
+	hair_colors = { {220, 220, 100}, {180, 160, 20}, {150, 120, 10}, {110, 90, 10}, {80, 60, 10}, 
+			{50, 30, 0}, {170, 50, 0}, {120, 40, 0}, {60, 0, 0}, {0, 0, 0}, {255, 240, 200}, {210, 210, 210},
+			{160, 160, 160}, {80, 80, 80}, {255, 255, 255} }
+
+	-- reference template for face object
 	portrait = { eyebrows = nil, eyebrows_c = {255,255,255,255}, 
 			eyes = nil, eyes_c = {255,255,255,255},
       face = nil, face_c = {255,255,255,255},
@@ -135,9 +145,6 @@ end
 
 
 function keypressed(key) 
-	if key == "r" then
-		curchar = generatecharacter()
-	end
 
 	if viewmode == "list" then
 		if key == "right" then
@@ -256,6 +263,7 @@ function drawroster()
 
 end
 
+
 -- generate a list of crewmen and put them in the global list
 function generatecrewroster()
 	for i=1,20 do
@@ -313,20 +321,28 @@ function generaterandomface()
 
 	local portrait = {}
 
+	-- various color palettes; mouth is always pearly white for now, nose has no color but hey
+	local hairc = hair_colors[math.random(#hair_colors)]
+	local eyesc = eyes_colors[math.random(#eyes_colors)]
+	local shoulderc = shoulders_colors[math.random(#shoulders_colors)]
+	local facec = face_colors[math.random(#face_colors)]
+	local mouthc = {255,255,255,255}
+	local nosec = {255,255,255,255}
+
   portrait.eyebrows = eyebrows_list[math.random(#eyebrows_list)][2]
-  portrait.eyebrows_c = getrandomcolor()
+  portrait.eyebrows_c = hairc
   portrait.eyes = eyes_list[math.random(#eyes_list)][2]
-  portrait.eyes_c = getrandomcolor()
+  portrait.eyes_c = eyesc
   portrait.face = face_list[math.random(#face_list)][2]
-  portrait.face_c = getrandomcolor()
+  portrait.face_c = facec
   portrait.hair = hair_list[math.random(#hair_list)][2]
-  portrait.hair_c = getrandomcolor()
+  portrait.hair_c = hairc
   portrait.mouth = mouth_list[math.random(#mouth_list)][2]
-  portrait.mouth_c = getrandomcolor()
+  portrait.mouth_c = mouthc
   portrait.nose = nose_list[math.random(#nose_list)][2]
-  portrait.nose_c = getrandomcolor()
+  portrait.nose_c = nosec
   portrait.shoulders = shoulders_list[math.random(#shoulders_list)][2]
-  portrait.shoulders_c = getrandomcolor()
+  portrait.shoulders_c = shoulderc
 
 	return portrait
 
