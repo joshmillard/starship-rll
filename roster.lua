@@ -94,9 +94,6 @@ function load()
 
 	crewroster = {}
 	generatecrewroster()
-	-- this should probably be done when switching to dossier mode, but just
-	-- for safety at the moment since this is a hacky mess...
-	-- curchar = crewroster[1]
 
 	-- modal switch hack
 	viewmode = "list"
