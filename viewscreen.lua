@@ -58,6 +58,8 @@ function load()
 	-- construct our menu objects
 	build_menus()
 
+	alien_statement = generate_alien_statement()
+
 	-- which menu are we viewing?
 	active_menu = menu_root
 
@@ -92,6 +94,9 @@ function draw()
 	draw_miniship_stats(ourship, 150, 190)
 	draw_miniship_stats(alienship, 230, 190)
 
+	-- render alien message
+	love.graphics.printf(render_perceived_statement(alien_statement), 40, 108, 240, "center") 
+
 	-- help text
   love.graphics.setColor(80, 80, 160)
   love.graphics.print( "arrow keys to navigate menu (options do fuckall for now)", 10, 218 )
@@ -110,6 +115,70 @@ function keypressed(key)
 	elseif key == "left" then
 		go_parent_menu()
 	end	
+end
+
+
+-- generate a statement from the alien
+function generate_alien_statement()
+	local phrases = {"Greetings, alien vessel.  We are a trading barge, from the planet Orbulon.",
+			"Withdraw from this region or we will fire upon you until you explode.",
+			"Death comes to us all with furious, merciless sureness, but for now let us talk.",
+			"You will perish.",
+			"You will flourish."
+			}
+
+	local newphrase = phrases[math.random(#phrases)]
+	local tokens = hackysplit(newphrase) -- syntax for lua split?
+	-- wait, lua has *no* built-in split function? Are you shitting me?
+
+	-- statement data structure: the english word, the alien word, token by token, and the
+	-- translated-or-not status {plain = token, alien = f(token), translated = false}
+	local newstatement = {}
+	for i,v in ipairs(tokens) do
+		local plain = v
+		local alien = alienize(v)
+		local translated = false
+		table.insert(newstatement, {plain = plain, alien = alien, translated = translated})
+	end
+
+	return newstatement
+end
+	
+
+-- render a string of the so-far-translated alien statement
+function render_perceived_statement(s) 
+	local outstring = ""
+	for i,v in ipairs(s) do
+		if v.translated == true then
+			outstring = outstring .. v.plain
+		else
+			outstring = outstring .. v.alien
+		end
+		if i < #s then
+			outstring = outstring .. " "
+		end
+	end
+	return outstring
+end
+
+
+-- cheapo split-on-space function since lua lacks a builtin one?
+function hackysplit(string)
+	local newlist = {}
+	for token in string.gmatch(string, "[^%s]+") do
+		-- newlist[#newlist + 1] = token -- has to be a less hacky way to push onto array
+		table.insert(newlist, token)
+	-- stock newlist with tokens of string
+	end
+	return newlist
+end
+
+
+-- translate plain english text to alien language
+function alienize(string)
+	local newword = string.reverse(string)
+	-- translate word
+	return newword
 end
 
 
