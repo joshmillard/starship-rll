@@ -21,6 +21,35 @@ function load()
 	-- group things up
 	alienvessel_list = {alienvessel_1, alienvessel_2}
 	alien_list = {alien_1, alien_2, alien_3}
+	
+	-- and now some miniship ship-status graphics stuff
+	-- miniship diagram component parts
+	fed_nacelle_1 = love.graphics.newImage("img/viewscreen/miniships/fed_nacelle_1.png")
+	fed_hull_1 = love.graphics.newImage("img/viewscreen/miniships/fed_hull_1.png")
+	fed_saucer_1 = love.graphics.newImage("img/viewscreen/miniships/fed_saucer_1.png")
+	alien_1_hull_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_hull_1.png")
+	alien_1_thruster_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_thruster_1.png")
+	alien_1_wing_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_wing_1.png")
+
+	-- and miniship definitions
+	fed_layout = { width = 42, height = 26, parts = {
+			{part = "hull", image = fed_hull_1, x = 6, y = 5, xflip = false, yflip = false},
+			{part = "saucer", image = fed_saucer_1, x = 20, y = 0, xflip = false, yflip = false},
+			{part = "port nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = false},
+			{part = "starboard nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = true}
+		} }
+
+	alien_1_layout = { width = 25, height = 22, parts = { 
+			{part = "port thruster", image = alien_1_thruster_1, x = 0 , y = 1, xflip = false, yflip = false},
+			{part = "starboard thruster", image = alien_1_thruster_1, x = 0, y = 1, xflip = false, yflip = true},
+			{part = "port wing", image = alien_1_wing_1, x = 12, y = 0, xflip = false, yflip = false},
+			{part = "starboard wing", image = alien_1_wing_1 , x = 12, y = 0, xflip = false, yflip = true},
+			{part = "hull", image = alien_1_hull_1, x = 4, y = 0, xflip = false, yflip = false}
+		} }
+
+	-- and overarching ship data structures
+	ourship = { name = "Demosthenes", layout = fed_layout, maxshields = 12, shields = 12, beam = 5 }
+	alienship = { name = "Xzrrthp", layout = alien_1_layout, maxshields = 15, shields = 5, beam = 6 }
 
 	-- pick an alien and a ship
 	alien = alien_list[math.random(#alien_list)]
@@ -56,6 +85,18 @@ function draw()
 	-- then draw a menu
 	draw_active_menu()
 
+	-- and draw some miniships
+	draw_miniship(ourship, 160, 160, 0)
+	draw_miniship(alienship, 240, 160, 180)
+
+	draw_miniship_stats(ourship, 150, 190)
+	draw_miniship_stats(alienship, 230, 190)
+
+	-- help text
+  love.graphics.setColor(80, 80, 160)
+  love.graphics.print( "arrow keys to navigate menu (options do fuckall for now)", 10, 218 )
+
+
 end
 
 
@@ -69,6 +110,49 @@ function keypressed(key)
 	elseif key == "left" then
 		go_parent_menu()
 	end	
+end
+
+
+-- draw small ship schematic at x,y, possibly rotated
+function draw_miniship(ship, ox, oy, orientation)
+
+	-- a lot less to type
+	local p = ship.layout.parts
+	local w = ship.layout.width
+	local h = ship.layout.height
+	local orix = w / 2
+	local oriy = w / 2
+
+	for i,v in ipairs(p) do
+		local x = v.x
+		local y = v.y	
+		local scalex = 1
+		local scaley = 1
+		local rotation = 0
+		if orientation ~= 0 then
+			rotation = math.rad(180)
+		end
+		if v.xflip == true then
+			x = w - x
+			scalex = -1
+		end
+		if v.yflip == true then
+			y = h - y
+			scaley = -1
+		end
+
+		-- rotation scheme currently shit, so just declining to actually use orientation
+		love.graphics.setColor(0,255,0,255)
+		love.graphics.draw(v.image, ox + x, oy + y, 0, scalex, scaley, 0, 0) 
+
+	end
+end
+
+
+-- draw labels/stats for miniship
+function draw_miniship_stats(ship, x, y)
+	love.graphics.setColor(0,0,80,255)
+	love.graphics.print(ship.name .. "\nShields: " .. ship.shields .. "\nWeapons: " .. ship.beam, x, y)
 end
 
 

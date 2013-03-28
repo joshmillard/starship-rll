@@ -232,7 +232,7 @@ end
 -- draw up the list of the crew
 function drawroster() 
 	love.graphics.setColor(0,0,0,255)
-	love.graphics.print("USS Demo crew roster", 10, 12)
+	love.graphics.print("Demosthenes crew roster", 10, 12)
 	love.graphics.print("NAME", 18, 26)
 	love.graphics.print("DEPARTMENT", 98, 26)
 	love.graphics.print("ROLE", 178, 26)
