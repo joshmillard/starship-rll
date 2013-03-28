@@ -26,15 +26,8 @@ function load()
 	alien = alien_list[math.random(#alien_list)]
 	alienvessel = alienvessel_list[math.random(#alienvessel_list)]
 
-	-- define some menu contents
-	menu_root = { selection = 1, items = { 
-			{"DIPLOMACY", "do_diplomacy_menu()"},
-			{"TACTICAL", "do_tactical_menu()"},
-			{"ENGINEERING", "do_engineering_menu()"},
-			{"NAVIGATION", "do_navigation_menu()"},
-			{"COMMUNICATIONS", "do_communications_menu()"},
-			{"SENSORS", "do_sensors_menu()"}
-		} }
+	-- construct our menu objects
+	build_menus()
 
 	-- which menu are we viewing?
 	active_menu = menu_root
@@ -73,6 +66,8 @@ function keypressed(key)
 		go_prev_menu_item()
 	elseif key == "right" then
 		do_menu_item()
+	elseif key == "left" then
+		go_parent_menu()
 	end	
 end
 
@@ -112,5 +107,164 @@ end
 
 -- execute function tied to menu item
 function do_menu_item()
-	-- ha ha sucker
+	active_menu.items[active_menu.selection][2]()
+end
+
+
+-- return to parent menu
+function go_parent_menu()
+	if active_menu.parent ~= nil then
+		active_menu.parent()
+	end
+end
+
+
+-- and now, a whole bunch of submenu functions! --
+
+-- take us to dipomacy submenu
+function do_root_menu()
+	active_menu = menu_root
+end
+
+function do_diplomacy_menu()
+	active_menu = menu_diplomacy
+end
+
+function do_tactical_menu()
+	active_menu = menu_tactical
+end
+
+function do_engineering_menu()
+	active_menu = menu_engineering
+end
+
+function do_navigation_menu()
+	active_menu = menu_navigation
+end
+
+function do_communications_menu()
+	active_menu = menu_communications
+end
+
+function do_sensors_menu()
+	active_menu = menu_sensors
+end
+
+
+-- and now a fleet of action game logic functions based on order
+function do_diplomacy_reason()
+
+end
+
+
+function do_diplomacy_bribe()
+
+end
+
+
+function do_tactical_target()
+
+end
+
+
+function do_tactical_evade()
+
+end
+
+
+function do_engineering_reroute()
+
+end
+
+
+function do_engineering_suggestions()
+
+end
+
+
+function do_navigation_approach()
+
+end
+
+
+function do_navigation_backoff()
+
+end
+
+
+function do_navigation_plot()
+
+end
+
+
+function do_communications_signal()
+
+end
+
+
+function do_communications_translation()
+
+end
+
+
+function do_communications_end()
+
+end
+
+
+function do_sensors_ship()
+
+end
+
+
+function do_sensors_area()
+
+end
+
+
+-- put together menus with references to previously defined functions
+function build_menus()
+
+	-- define some menu contents
+	menu_root = { selection = 1, parent = nil, items = { 
+			{"DIPLOMACY", do_diplomacy_menu},
+			{"TACTICAL", do_tactical_menu},
+			{"ENGINEERING", do_engineering_menu},
+			{"NAVIGATION", do_navigation_menu},
+			{"COMMUNICATIONS", do_communications_menu},
+			{"SENSORS", do_sensors_menu}
+		} }
+
+	menu_diplomacy = { selection = 1, parent = do_root_menu, items = {
+			{"REASON", do_diplomacy_reason},
+			{"BRIBE", do_diplomacy_bribe}
+		} }
+
+	menu_tactical = { selection = 1, parent = do_root_menu, items = {
+			{"TARGET", do_tactical_target},
+			{"EVADE", do_tactical_evade}
+		} }
+
+	menu_engineering = { selection = 1, parent = do_root_menu, items = {
+      {"REROUTE POWER", do_engineering_reroute },
+			{"SUGGESTIONS", do_engineering_suggestions }
+    } }
+
+	menu_navigation = { selection = 1, parent = do_root_menu, items = {
+      {"APPROACH", do_navigation_approach },
+			{"BACK OFF", do_navigation_backoff },
+			{"PLOT A COURSE", do_navigation_plot }
+    } }
+
+	menu_communications = { selection = 1, parent = do_root_menu, items = {
+      {"REFINE SIGNAL", do_communications_signal },
+			{"REFINE TRANSLATION", do_communications_translation},
+			{"END TRANSMISSION", do_communications_end}
+    } }
+
+	menu_sensors = { selection = 1, parent = do_root_menu, items = {
+      {"SCAN SHIP", do_sensors_ship },
+			{"SCAN AREA", do_sensors_area }
+    } }
+
 end
