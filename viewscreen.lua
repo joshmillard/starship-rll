@@ -17,10 +17,16 @@ function load()
 	alien_1 = love.graphics.newImage("img/viewscreen/alien-1.png")
   alien_2 = love.graphics.newImage("img/viewscreen/alien-2.png")
   alien_3 = love.graphics.newImage("img/viewscreen/alien-3.png")
+	viewscreen_noise_1 = love.graphics.newImage("img/viewscreen/viewscreen-noise-1.png")
+	viewscreen_noise_2 = love.graphics.newImage("img/viewscreen/viewscreen-noise-2.png")
 
 	-- group things up
 	alienvessel_list = {alienvessel_1, alienvessel_2}
 	alien_list = {alien_1, alien_2, alien_3}
+	viewscreen_noise_anim_frames = {viewscreen_noise_1, viewscreen_noise_2}
+	viewscreen_noise_anim_index = 1
+	viewscreen_noise_anim_delay = 0.2
+	viewscreen_noise_anim_t = 0
 	
 	-- and now some miniship ship-status graphics stuff
 	-- miniship diagram component parts
@@ -59,6 +65,7 @@ function load()
 	build_menus()
 
 	alien_statement = generate_alien_statement()
+	comm_signal_noise = 0.8
 
 	-- which menu are we viewing?
 	active_menu = menu_root
@@ -67,7 +74,16 @@ end
 
 
 function update(dt)
-
+	viewscreen_noise_anim_t = viewscreen_noise_anim_t + dt
+	if viewscreen_noise_anim_t > viewscreen_noise_anim_delay then
+		if math.random(3) > 2 then
+			viewscreen_noise_anim_index = viewscreen_noise_anim_index + 1
+			if viewscreen_noise_anim_index > #viewscreen_noise_anim_frames then
+				viewscreen_noise_anim_index = 1
+			end
+			viewscreen_noise_anim_t = viewscreen_noise_anim_t - viewscreen_noise_anim_delay
+		end
+	end
 end
 
 
@@ -80,6 +96,10 @@ function draw()
 	love.graphics.draw(alienvessel, 0, 0)
 	love.graphics.draw(alien, 124, 38)
 	
+	-- and possibly some viewscreen visual noise
+	love.graphics.setColor(math.random(100) + 155, math.random(100) + 155, math.random(100) + 155, 255 * comm_signal_noise)
+	love.graphics.draw(viewscreen_noise_anim_frames[viewscreen_noise_anim_index])
+
 	-- and mask it all with the viewscreen
 	love.graphics.setColor(180,180,180,255)
 	love.graphics.draw(viewscreenwindow, 0, 0)
@@ -95,7 +115,12 @@ function draw()
 	draw_miniship_stats(alienship, 230, 190)
 
 	-- render alien message
+	love.graphics.setColor(0,0,0,255)
 	love.graphics.printf(render_perceived_statement(alien_statement), 40, 108, 240, "center") 
+
+	-- render current response text, if any
+	love.graphics.setColor(0,100,0,255)
+	love.graphics.printf(response, 40, 135, 240, "center")
 
 	-- help text
   love.graphics.setColor(80, 80, 160)
@@ -106,6 +131,9 @@ end
 
 
 function keypressed(key)
+	-- cheap hack in lieu of actual messaging control: wait for keypress to clear feedback message
+	response = ""
+
 	if key == "down" then
 		go_next_menu_item()
 	elseif key == "up" then
@@ -123,16 +151,19 @@ function generate_alien_statement()
 	local phrases = {"Greetings, alien vessel.  We are a trading barge, from the planet Orbulon.",
 			"Withdraw from this region or we will fire upon you until you explode.",
 			"Death comes to us all with furious, merciless sureness, but for now let us talk.",
-			"You will perish.",
-			"You will flourish."
+			"You will perish, glory to the all-fathers.",
+			"You will flourish, glory to the all-fathers",
+			"Perhaps you would consider selling us some fuel.",
+			"You can't stop here, this is Andorian warp-bat country.",
+			"Holy cow!  You're the ugliest creatures we've ever encountered!  May we take some photographs for our archives?"
 			}
 
 	local newphrase = phrases[math.random(#phrases)]
 	local tokens = hackysplit(newphrase) -- syntax for lua split?
 	-- wait, lua has *no* built-in split function? Are you shitting me?
 
-	-- statement data structure: the english word, the alien word, token by token, and the
-	-- translated-or-not status {plain = token, alien = f(token), translated = false}
+	-- statement data structure: plain is plantext, alien is munged text, translated is per-token 
+	-- translation status
 	local newstatement = {}
 	for i,v in ipairs(tokens) do
 		local plain = v
@@ -148,12 +179,25 @@ end
 -- render a string of the so-far-translated alien statement
 function render_perceived_statement(s) 
 	local outstring = ""
+	local noisechars = {"#", "@", "%", "*", "&"}
+
 	for i,v in ipairs(s) do
+		local outword
 		if v.translated == true then
-			outstring = outstring .. v.plain
+			outword = v.plain
 		else
-			outstring = outstring .. v.alien
+			outword = string.upper(v.alien)
 		end
+-- Because we aren't used a fixed-width font, this is too successful at 
+-- muddying up the text beyond readability under the current re-render-every-frame
+-- regime.
+--
+--		for i=1,string.len(outword) do
+--			if((math.random() * 5) < comm_signal_noise) then
+--				outword = replace_char(i, outword, noisechars[math.random(#noisechars)])
+--			end
+--		end
+		outstring = outstring .. outword
 		if i < #s then
 			outstring = outstring .. " "
 		end
@@ -173,6 +217,11 @@ function hackysplit(string)
 	return newlist
 end
 
+
+-- and a hacky character-replacement function as well, via stack overflow
+function replace_char(pos, str, r)
+    return str:sub(1, pos-1) .. r .. str:sub(pos+1)
+end
 
 -- translate plain english text to alien language
 function alienize(string)
@@ -351,12 +400,12 @@ end
 
 
 function do_communications_signal()
-
+	response = "Comm: \'" .. refine_signal() .. "\'"
 end
 
 
 function do_communications_translation()
-
+	response = "Comm: \'" .. refine_translation() .. "\'"
 end
 
 
@@ -373,6 +422,57 @@ end
 function do_sensors_area()
 
 end
+
+
+-- incrementally improve current translation of alien communication
+function refine_translation()
+	local numimproved = 0
+	
+	-- translate 0 or more untranslated words
+	for i,v in ipairs(alien_statement) do
+		if v.translated == false then
+			if math.random() > 0.5 then
+				v.translated = true
+				numimproved = numimproved + 1
+			end
+		end
+	end
+
+	-- send back a status reply	
+	if numimproved == 0 then
+		return "Sorry, Captain, we can't do any better than this so far."
+	elseif numimproved == 1 then
+		return "Ah, so their adverbial structure is fractal!"
+	elseif numimproved == 2 then
+		return "Wait, this is a bimodal syntax...oh!  Right!"
+	else
+		return "We're making excellent progress, sir."
+	end
+end
+
+
+-- clean up the visual/linguistic clarity of the signal if possible
+function refine_signal()
+	local degreeimproved = 0
+	local delta = 0
+	delta = math.random() * 0.8
+	if delta > comm_signal_noise then
+		delta = comm_signal_noise
+	end
+
+	comm_signal_noise = comm_signal_noise - delta
+	if comm_signal_noise == 0 then
+		return "Signal is free of comm artifacts, sir."
+	elseif delta > 0.5 then
+		return "Recalibrating transponder...wow, that did the trick!"
+	elseif delta > 0.2 then
+		return "Should be a bit clearer now, sir"
+	elseif delta > 0 then
+		return "It's not much, sir, but I managed to squelch some noise..."
+	else
+		return "Sorry, sir, this signals got some stubborn gunk in it."
+	end
+end	
 
 
 -- put together menus with references to previously defined functions
@@ -421,3 +521,5 @@ function build_menus()
     } }
 
 end
+
+
