@@ -19,6 +19,7 @@ function load()
   alien_3 = love.graphics.newImage("img/viewscreen/alien-3.png")
 	viewscreen_noise_1 = love.graphics.newImage("img/viewscreen/viewscreen-noise-1.png")
 	viewscreen_noise_2 = love.graphics.newImage("img/viewscreen/viewscreen-noise-2.png")
+	viewscreen_starfield = love.graphics.newImage("img/viewscreen/viewscreen-stars.png")
 
 	-- group things up
 	alienvessel_list = {alienvessel_1, alienvessel_2}
@@ -66,6 +67,7 @@ function load()
 
 	alien_statement = generate_alien_statement()
 	comm_signal_noise = 0.8
+	channel_open = true
 
 	-- which menu are we viewing?
 	active_menu = menu_root
@@ -91,16 +93,24 @@ function draw()
   -- 3x3 blocky pixels
   love.graphics.scale(3, 3)
 
-	-- let's lay down an alien and a vessel
-	love.graphics.setColor(255,255,255,255)
-	love.graphics.draw(alienvessel, 0, 0)
-	love.graphics.draw(alien, 124, 38)
+	-- if we've got an open comm channel, render the interlocutor's bridge
+	if channel_open == true then
+		-- let's lay down an alien and a vessel
+		love.graphics.setColor(255,255,255,255)
+		love.graphics.draw(alienvessel, 0, 0)
+		love.graphics.draw(alien, 124, 38)
 	
-	-- and possibly some viewscreen visual noise
-	love.graphics.setColor(math.random(100) + 155, math.random(100) + 155, math.random(100) + 155, 255 * comm_signal_noise)
-	love.graphics.draw(viewscreen_noise_anim_frames[viewscreen_noise_anim_index])
+		-- and possibly some viewscreen visual noise
+		love.graphics.setColor(math.random(100) + 155, math.random(100) + 155, math.random(100) + 155, 255 * comm_signal_noise)
+		love.graphics.draw(viewscreen_noise_anim_frames[viewscreen_noise_anim_index], 0, 0)
+	
+	else
+		-- a nice starfield!
+		love.graphics.setColor(255,255,255,255)
+		love.graphics.draw(viewscreen_starfield, 0, 0)
+	end
 
-	-- and mask it all with the viewscreen
+		-- and mask it all with the viewscreen
 	love.graphics.setColor(180,180,180,255)
 	love.graphics.draw(viewscreenwindow, 0, 0)
 
@@ -114,9 +124,11 @@ function draw()
 	draw_miniship_stats(ourship, 150, 190)
 	draw_miniship_stats(alienship, 230, 190)
 
-	-- render alien message
-	love.graphics.setColor(0,0,0,255)
-	love.graphics.printf(render_perceived_statement(alien_statement), 40, 108, 240, "center") 
+	-- render alien message if comm open
+	if channel_open == true then
+		love.graphics.setColor(0,0,0,255)
+		love.graphics.printf(render_perceived_statement(alien_statement), 40, 108, 240, "center") 
+	end
 
 	-- render current response text, if any
 	love.graphics.setColor(0,100,0,255)
@@ -398,6 +410,9 @@ function do_navigation_plot()
 
 end
 
+function do_communications_start()
+	response = "Comm: \'"  .. start_comm() .. "\'"
+end
 
 function do_communications_signal()
 	response = "Comm: \'" .. refine_signal() .. "\'"
@@ -410,7 +425,7 @@ end
 
 
 function do_communications_end()
-
+	response = "Comm: \'" .. end_comm() .. "\'"
 end
 
 
@@ -423,24 +438,55 @@ function do_sensors_area()
 
 end
 
+-- open a channel to alien if present and not already open
+function start_comm() 
+	if channel_open == false then
+		channel_open = true
+		return "Hailing...they're responding, sir."
+	else
+		return "We've already got them on the view screen, Captain."
+	end
+end
+
+
+-- end communications if in progress
+function end_comm()
+  if channel_open == true then
+    channel_open = false
+    return "Aye, Captain.  Channel terminated."
+  else
+    return "Sir?"
+  end
+end
+
 
 -- incrementally improve current translation of alien communication
 function refine_translation()
 	local numimproved = 0
-	
+	local numunimproved = 0
+
+	if channel_open == false then
+		return "Sir, we have no communications to translate"
+	end	
+
 	-- translate 0 or more untranslated words
 	for i,v in ipairs(alien_statement) do
 		if v.translated == false then
 			if math.random() > 0.5 then
 				v.translated = true
 				numimproved = numimproved + 1
+			else
+				numunimproved = numunimproved + 1 
 			end
 		end
 	end
 
 	-- send back a status reply	
-	if numimproved == 0 then
-		return "Sorry, Captain, we can't do any better than this so far."
+	
+	if (numimproved == 0) and (numunimproved == 0) then
+		return "Translation is complete, sir."
+	elseif numimproved == 0 then
+		return "Still trying to figure this one out, sir."
 	elseif numimproved == 1 then
 		return "Ah, so their adverbial structure is fractal!"
 	elseif numimproved == 2 then
@@ -455,6 +501,11 @@ end
 function refine_signal()
 	local degreeimproved = 0
 	local delta = 0
+
+  if channel_open == false then
+    return "Sir, there's no signal to refine currently."
+  end
+
 	delta = math.random() * 0.8
 	if delta > comm_signal_noise then
 		delta = comm_signal_noise
@@ -510,6 +561,7 @@ function build_menus()
     } }
 
 	menu_communications = { selection = 1, parent = do_root_menu, items = {
+			{"OPEN CHANNEL", do_communications_start },
       {"REFINE SIGNAL", do_communications_signal },
 			{"REFINE TRANSLATION", do_communications_translation},
 			{"END TRANSMISSION", do_communications_end}
