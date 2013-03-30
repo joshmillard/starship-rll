@@ -75,6 +75,10 @@ function load()
 	-- construct our menu objects
 	build_menus()
 
+	-- are they currently hostile? are we attacking?
+	aliens_hostile = true
+	attacking = true
+
 	-- comm related globals
 	alien_statement = generate_alien_statement()
 	comm_signal_noise = 0.8
@@ -102,6 +106,17 @@ function update(dt)
 			end
 			viewscreen_noise_anim_t = viewscreen_noise_anim_t - viewscreen_noise_anim_delay
 		end
+	end
+
+	-- check for end of turn processing
+	if turn_ended == true then
+		if aliens_hostile then
+			do_incoming_fire()
+		end
+		if attacking == true then
+			do_outgoing_fire()
+		end
+		turn_ended = false
 	end
 end
 
@@ -172,6 +187,36 @@ function keypressed(key)
 	elseif key == "left" then
 		go_parent_menu()
 	end	
+end
+
+
+-- calculate and assign damage to enemy ship
+-- generalize this to dofire(attackingship, receivingship)
+function do_outgoing_fire()
+	local shield_damage = ourship.beam
+	local hull_damage = 0
+	if shield_damage > alienship.shields then
+		hull_damage = shield_damage - alienship.shields
+		shield_damage = alienship.shields
+	end
+	alienship.shields = alienship.shields - shield_damage
+	
+	if hull_damage > 0 then
+		-- penetrated shields, do some real damage
+		-- pick a random ship part and damage it
+		local target = alienship.layout.parts[math.random(#(alienship.layout.parts))]
+		if hull_damage > target.hp then
+			hull_damage = target.hp
+		end
+		target.hp = target.hp - hull_damage
+	end
+
+end
+
+
+-- calculate and assign incomin damage from enemy ship
+function do_incoming_fire()
+	-- nothing yet, i'm invincible!
 end
 
 
@@ -297,7 +342,8 @@ function draw_miniship(ship, ox, oy, orientation)
 
 	-- add shield overlay
 	if ship.shields > 0 then
-		love.graphics.setColor(200,200,255,255)
+		local sp = ship.shields / ship.maxshields -- shield percentage
+		love.graphics.setColor(200, (sp * 100) + 100, sp * 255, (sp * 200) + 55)
 		love.graphics.draw(shield_oval, ox - 10, oy - 10)
 	end
 
@@ -506,6 +552,7 @@ end
 
 function do_engineering_suggestions()
 	response = "Eng: \'" .. eng_suggestion() .. "\'"
+	end_turn()
 end
 
 
@@ -525,20 +572,24 @@ end
 
 function do_communications_start()
 	response = "Comm: \'"  .. start_comm() .. "\'"
+	end_turn()
 end
 
 function do_communications_signal()
 	response = "Comm: \'" .. refine_signal() .. "\'"
+	end_turn()
 end
 
 
 function do_communications_translation()
 	response = "Comm: \'" .. refine_translation() .. "\'"
+	end_turn()
 end
 
 
 function do_communications_end()
 	response = "Comm: \'" .. end_comm() .. "\'"
+	end_turn()
 end
 
 
@@ -551,6 +602,12 @@ function do_sensors_area()
 
 end
 
+
+-- do end-of-turn stuff
+function end_turn()
+	-- for now, just set a bool that update can check
+	turn_ended = true
+end
 
 -- suggest some technobabble solution
 function eng_suggestion()
