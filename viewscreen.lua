@@ -190,33 +190,35 @@ function keypressed(key)
 end
 
 
--- calculate and assign damage to enemy ship
--- generalize this to dofire(attackingship, receivingship)
-function do_outgoing_fire()
-	local shield_damage = ourship.beam
+-- given two ships (a)ttacker and (d) defender, calc and assign damage
+function do_attack(a, d)
+	local shield_damage = a.beam
 	local hull_damage = 0
-	if shield_damage > alienship.shields then
-		hull_damage = shield_damage - alienship.shields
-		shield_damage = alienship.shields
+	if shield_damage > d.shields then
+		hull_damage = shield_damage - d.shields
+		shield_damage = d.shields
 	end
-	alienship.shields = alienship.shields - shield_damage
+	d.shields = d.shields - shield_damage
 	
 	if hull_damage > 0 then
 		-- penetrated shields, do some real damage
 		-- pick a random ship part and damage it
-		local target = alienship.layout.parts[math.random(#(alienship.layout.parts))]
+		local target = d.layout.parts[math.random(#(d.layout.parts))]
 		if hull_damage > target.hp then
 			hull_damage = target.hp
 		end
 		target.hp = target.hp - hull_damage
 	end
-
 end
 
+-- calculate and assign damage to enemy ship
+function do_outgoing_fire()
+	do_attack(ourship, alienship)
+end
 
 -- calculate and assign incomin damage from enemy ship
 function do_incoming_fire()
-	-- nothing yet, i'm invincible!
+	do_attack(alienship, ourship)
 end
 
 
