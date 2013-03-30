@@ -65,9 +65,16 @@ function load()
 	-- construct our menu objects
 	build_menus()
 
+	-- comm related globals
 	alien_statement = generate_alien_statement()
 	comm_signal_noise = 0.8
 	channel_open = true
+
+	-- engineering related globals
+	babble_verb = {}
+	babble_adjective = {}
+	babble_noun = {}
+	build_babble_tables()
 
 	-- which menu are we viewing?
 	active_menu = menu_root
@@ -101,7 +108,7 @@ function draw()
 		love.graphics.draw(alien, 124, 38)
 	
 		-- and possibly some viewscreen visual noise
-		love.graphics.setColor(math.random(100) + 155, math.random(100) + 155, math.random(100) + 155, 255 * comm_signal_noise)
+		love.graphics.setColor(math.random(100) + 155, math.random(100) + 155, math.random(100) + 155, 155 * comm_signal_noise)
 		love.graphics.draw(viewscreen_noise_anim_frames[viewscreen_noise_anim_index], 0, 0)
 	
 	else
@@ -301,6 +308,94 @@ function draw_active_menu()
 end
 
 
+-- stock babble constituent tables with words
+function build_babble_tables()
+	babble_verb = {"modulate",
+"re-modulate",
+"invert",
+"boost",
+"redirect",
+"rewire",
+"energize",
+"polarize",
+"depolarize",
+"flush",
+"reboot",
+"realign",
+"deactivate",
+"ionize",
+"deionize",
+"oscilate",
+"isolate",
+"calibrate",
+"filter",
+"deflect",
+"rotate",
+"magnify",
+"detach",
+"repurpose",
+"overclock",
+"supercharge",
+"re-integrate",
+"underclock",
+"overdrive"
+		}
+
+	babble_adjective = {"spectral",
+"dimensional",
+"energy",
+"rotational",
+"deflector",
+"positronic",
+"duotronic",
+"quantum",
+"molecular",
+"modular",
+"antimatter",
+"dilithium",
+"trilithium",
+"subspace",
+"fuel",
+"jeffries",
+"particle",
+"atomic",
+"subatomic",
+"matter",
+"tachyon",
+"photon",
+"eidetic",
+"stochastic"
+		}
+
+	babble_noun = {"matrix",
+"converter",
+"coil",
+"generator",
+"deflector",
+"sensor",
+"antenna",
+"array",
+"battery",
+"continuum",
+"spectrum",
+"replicator",
+"recycler",
+"conduit",
+"tube",
+"collider",
+"field",
+"processor",
+"simulator",
+"repressor",
+"suppressor",
+"regressor",
+"transponder",
+"transistor"
+		}
+
+end
+
+
 -- cycle to the next item in the current active menu
 function go_next_menu_item()
 	active_menu.selection = active_menu.selection + 1
@@ -392,7 +487,7 @@ end
 
 
 function do_engineering_suggestions()
-
+	response = "Eng: \'" .. eng_suggestion() .. "\'"
 end
 
 
@@ -437,6 +532,30 @@ end
 function do_sensors_area()
 
 end
+
+
+-- suggest some technobabble solution
+function eng_suggestion()
+	local prefix = {"I dunno, sir, I guess I could ",
+			"Oh! I bet we could ",
+			"Let's see, if we ",
+			"I've got it! We'll ",
+			"It's crazy, but how about I ",
+			"Gimme a minute, I'll ",
+			"Best bet is we just ",
+			"It's a long shot, but we can ",
+			"I dunno, maybe we can "
+		}
+
+	local bs = ""
+	bs = bs .. prefix[math.random(#prefix)]
+	bs = bs .. babble_verb[math.random(#babble_verb)] .. " the "
+	bs = bs .. babble_adjective[math.random(#babble_adjective)] .. " "
+	bs = bs .. babble_noun[math.random(#babble_noun)] .. "..."
+
+	return bs
+end
+
 
 -- open a channel to alien if present and not already open
 function start_comm() 
