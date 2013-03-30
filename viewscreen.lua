@@ -37,21 +37,31 @@ function load()
 	alien_1_hull_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_hull_1.png")
 	alien_1_thruster_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_thruster_1.png")
 	alien_1_wing_1 = love.graphics.newImage("img/viewscreen/miniships/alien_1_wing_1.png")
+	shield_oval = love.graphics.newImage("img/viewscreen/miniships/shield_oval.png")
 
 	-- and miniship definitions
 	fed_layout = { width = 42, height = 26, parts = {
-			{part = "hull", image = fed_hull_1, x = 6, y = 5, xflip = false, yflip = false},
-			{part = "saucer", image = fed_saucer_1, x = 20, y = 0, xflip = false, yflip = false},
-			{part = "port nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = false},
-			{part = "starboard nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = true}
+			{part = "hull", image = fed_hull_1, x = 6, y = 5, xflip = false, yflip = false, 
+				maxhp = 10, hp = 10},
+			{part = "saucer", image = fed_saucer_1, x = 20, y = 0, xflip = false, yflip = false, 
+				maxhp = 8, hp = 8},
+			{part = "port nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = false, 
+				maxhp = 5, hp = 5},
+			{part = "starboard nacelle", image = fed_nacelle_1, x = 0, y = 1, xflip = false, yflip = true,
+				maxhp = 5, hp = 5}
 		} }
 
 	alien_1_layout = { width = 25, height = 22, parts = { 
-			{part = "port thruster", image = alien_1_thruster_1, x = 0 , y = 1, xflip = false, yflip = false},
-			{part = "starboard thruster", image = alien_1_thruster_1, x = 0, y = 1, xflip = false, yflip = true},
-			{part = "port wing", image = alien_1_wing_1, x = 12, y = 0, xflip = false, yflip = false},
-			{part = "starboard wing", image = alien_1_wing_1 , x = 12, y = 0, xflip = false, yflip = true},
-			{part = "hull", image = alien_1_hull_1, x = 4, y = 0, xflip = false, yflip = false}
+			{part = "port thruster", image = alien_1_thruster_1, x = 0 , y = 1, xflip = false, yflip = false,
+				maxhp = 3, hp = 3},
+			{part = "starboard thruster", image = alien_1_thruster_1, x = 0, y = 1, xflip = false, yflip = true,
+				maxhp = 3, hp = 3},
+			{part = "port wing", image = alien_1_wing_1, x = 12, y = 0, xflip = false, yflip = false,
+				maxhp = 4, hp = 4},
+			{part = "starboard wing", image = alien_1_wing_1 , x = 12, y = 0, xflip = false, yflip = true,
+				maxhp = 4, hp = 4},
+			{part = "hull", image = alien_1_hull_1, x = 4, y = 0, xflip = false, yflip = false,
+				maxhp = 12, hp = 12}
 		} }
 
 	-- and overarching ship data structures
@@ -258,7 +268,7 @@ function draw_miniship(ship, ox, oy, orientation)
 	local w = ship.layout.width
 	local h = ship.layout.height
 	local orix = w / 2
-	local oriy = w / 2
+	local oriy = h / 2
 
 	for i,v in ipairs(p) do
 		local x = v.x
@@ -279,10 +289,18 @@ function draw_miniship(ship, ox, oy, orientation)
 		end
 
 		-- rotation scheme currently shit, so just declining to actually use orientation
-		love.graphics.setColor(0,255,0,255)
+		-- replace this quicky green-channel hack with a proper color range function for damage
+		love.graphics.setColor(130,(255 * (v.hp / v.maxhp)),0,255)
 		love.graphics.draw(v.image, ox + x, oy + y, 0, scalex, scaley, 0, 0) 
 
 	end
+
+	-- add shield overlay
+	if ship.shields > 0 then
+		love.graphics.setColor(200,200,255,255)
+		love.graphics.draw(shield_oval, ox - 10, oy - 10)
+	end
+
 end
 
 
