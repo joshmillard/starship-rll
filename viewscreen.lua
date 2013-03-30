@@ -68,6 +68,14 @@ function load()
 	ourship = { name = "Demosthenes", layout = fed_layout, maxshields = 12, shields = 12, beam = 5 }
 	alienship = { name = "Xzrrthp", layout = alien_1_layout, maxshields = 15, shields = 5, beam = 6 }
 
+	-- and some red alert graphics
+	red_alert_all_clear_img = love.graphics.newImage("img/viewscreen/red_alert_off.png")
+	red_alert_img = love.graphics.newImage("img/viewscreen/red_alert_on.png")
+	red_alert_active = true
+	red_alert_blink_on = false
+	red_alert_blink_timer = 0
+	red_alert_blink_delay = 1
+
 	-- pick an alien and a ship
 	alien = alien_list[math.random(#alien_list)]
 	alienvessel = alienvessel_list[math.random(#alienvessel_list)]
@@ -97,6 +105,8 @@ end
 
 
 function update(dt)
+
+	-- do viewscreen noise anim cycle (need to figure out generalized anim cycle/event plan)
 	viewscreen_noise_anim_t = viewscreen_noise_anim_t + dt
 	if viewscreen_noise_anim_t > viewscreen_noise_anim_delay then
 		if math.random(3) > 2 then
@@ -105,6 +115,20 @@ function update(dt)
 				viewscreen_noise_anim_index = 1
 			end
 			viewscreen_noise_anim_t = viewscreen_noise_anim_t - viewscreen_noise_anim_delay
+		end
+	end
+
+	-- do red alert anim
+	if red_alert_active == true then
+		red_alert_blink_timer = red_alert_blink_timer + dt
+		if red_alert_blink_timer > red_alert_blink_delay then
+			-- toggle
+			red_alert_blink_timer = red_alert_blink_timer - red_alert_blink_delay
+			if red_alert_blink_on == true then
+				red_alert_blink_on = false
+			else
+				red_alert_blink_on = true
+			end
 		end
 	end
 
@@ -118,6 +142,7 @@ function update(dt)
 		end
 		turn_ended = false
 	end
+
 end
 
 
@@ -155,6 +180,9 @@ function draw()
 
 	draw_miniship_stats(ourship, 150, 190)
 	draw_miniship_stats(alienship, 230, 190)
+
+	-- red alert beacon!
+	draw_red_alert_status()
 
 	-- render alien message if comm open
 	if channel_open == true then
@@ -219,6 +247,28 @@ end
 -- calculate and assign incomin damage from enemy ship
 function do_incoming_fire()
 	do_attack(alienship, ourship)
+end
+
+
+-- draw red alert beacon
+function draw_red_alert_status()
+	local x = 10
+	local y = 20
+	if red_alert_active == true then
+		-- red alert!
+		love.graphics.setColor(255,255,255,255)
+		if red_alert_blink_on == true then
+			love.graphics.draw(red_alert_img, x, y)
+		else
+			love.graphics.draw(red_alert_all_clear_img, x, y)
+		end
+		love.graphics.setColor(180,0,0,255)
+		love.graphics.print(" RED\nALERT", x - 1, y + 15)
+	else
+		-- all clear
+		love.graphics.setColor(255,255,255,255)
+		love.graphics.draw(red_alert_all_clear_img, x, y)
+	end
 end
 
 
