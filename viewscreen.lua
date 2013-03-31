@@ -196,7 +196,7 @@ function draw()
 
 	-- help text
   love.graphics.setColor(80, 80, 160)
-  love.graphics.print( "arrow keys to navigate menu (options do fuckall for now)", 10, 218 )
+  love.graphics.print( "arrow keys to navigate/activate menu", 10, 218 )
 
 
 end
@@ -410,6 +410,9 @@ end
 
 
 function draw_active_menu()
+	local menux = 20
+	local menuy = 160
+
 	-- oh hey neat, you can use # around an evaluated expression? 
 	for i=1,#(active_menu.items) do
 		if active_menu.selection == i then
@@ -417,10 +420,10 @@ function draw_active_menu()
 		else
 			love.graphics.setColor(0,0,0,255)
 		end
-		love.graphics.print(active_menu.items[i][1], 20, 160 + (i*8))
+		love.graphics.print(active_menu.items[i][1], menux, menuy + (i*8))
 	end
 	love.graphics.setColor(90,30,30,255)
-	love.graphics.print("--", 10, 160 + (active_menu.selection*8))
+	love.graphics.print("--", menux - 10, menuy + (active_menu.selection*8))
 end
 
 
